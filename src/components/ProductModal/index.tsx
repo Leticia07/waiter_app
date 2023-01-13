@@ -8,14 +8,20 @@ import { CloseButton, Footer, FooterContainer, Header, Image, Ingredient, Ingred
 
 interface ProductModalProps {
   visible: boolean;
+  onAddToCart: (product: Product) => void;
   product: Product | null;
   onClose: () => void;
 }
 
-export function ProductModal({ visible, product, onClose }: ProductModalProps) {
+export function ProductModal({ visible, product, onClose, onAddToCart }: ProductModalProps) {
 
   if (!product) {
     return null;
+  }
+
+  function handleAddToCart() {
+    onAddToCart(product!);
+    onClose();
   }
 
   return (
@@ -72,7 +78,7 @@ export function ProductModal({ visible, product, onClose }: ProductModalProps) {
             <Text size={20} weight="600">{formatCurrency(product.price)}</Text>
           </PriceContainer>
 
-          <Button onPress={() => alert('a')}>
+          <Button onPress={handleAddToCart}>
             Adicionar ao pedido
           </Button>
         </FooterContainer>

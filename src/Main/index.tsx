@@ -5,23 +5,14 @@ import { Categories } from '../components/Categories';
 import { Header } from '../components/Header';
 import { Menu } from '../components/Menu';
 import { TableModal } from '../components/TableModal';
-import { products } from '../mocks/products';
 import { CartItem } from '../types/CartItem';
+import { Product } from '../types/Product';
 import { Container, CategoriesContainer, MenuContainer, Footer, FooterContainer } from './styles';
 
 export function Main() {
   const [isTableModalVisible, setIsTableModalVisible] = useState(false);
   const [selectedTable, setSelectedTable] = useState('');
-  const [cartItems, setCartItems] = useState<Array<CartItem>>([
-    {
-      quantity: 1,
-      product: products[0],
-    },
-    {
-      quantity: 2,
-      product: products[1],
-    },
-  ]);
+  const [cartItems, setCartItems] = useState<Array<CartItem>>([]);
 
   function handleSaveTable(table: string) {
     setSelectedTable(table);
@@ -30,6 +21,55 @@ export function Main() {
 
   function handleCancelOrder() {
     setSelectedTable('');
+  }
+
+  function handleAddToCart(product: Product) {
+    if (!selectedTable) {
+      setIsTableModalVisible(true);
+    }
+
+    setCartItems((prevState) => {
+      const itemIndex = prevState.findIndex(cartItem => cartItem.product._id === product._id);
+
+      if (itemIndex < 0) {
+        return prevState.concat({
+          quantity: 1,
+          product,
+        });
+      }
+
+      const newCartItems = [...prevState];
+      const item = newCartItems[itemIndex];
+
+      newCartItems[itemIndex] = {
+        ...item,
+        quantity: item.quantity + 1,
+      };
+
+      return newCartItems;
+    });
+  }
+
+  function handlDecrementCartItem(product: Product) {
+    setCartItems((prevState) => {
+      const itemIndex = prevState.findIndex(cartItem => cartItem.product._id === product._id);
+
+      const item = prevState[itemIndex];
+      const newCartItems = [...prevState];
+
+
+      if (item.quantity === 1) {
+        newCartItems.splice(itemIndex, 1);
+        return newCartItems;
+      }
+
+      newCartItems[itemIndex] = {
+        ...item,
+        quantity: item.quantity - 1,
+      };
+
+      return newCartItems;
+    });
   }
 
   return (
@@ -43,7 +83,9 @@ export function Main() {
           <Categories/>
         </CategoriesContainer>
         <MenuContainer>
-          <Menu/>
+          <Menu
+            onAddToCart={handleAddToCart}
+          />
         </MenuContainer>
       </Container>
       <Footer>
@@ -57,6 +99,8 @@ export function Main() {
           {selectedTable && (
             <Cart
               cartItems={cartItems}
+              onAdd={handleAddToCart}
+              onDecrement={handlDecrementCartItem}
             />
           )}
         </FooterContainer>
